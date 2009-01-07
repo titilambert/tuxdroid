@@ -12,4 +12,9 @@ In order to be accepted in the repo, scripts/gadgets must:
 
 If a script/gadget fails to meet these requirements, the creator will be contacted via GetHub so that he/she may fix/delete the script/gadget.
 
+NOTES: 
+* Please remember to fetch before you edit!
+* Place all files in the root of the master branch.
+* If your program consists of multiple files, place them in their own folder named after the program. 
+
 Have fun!
