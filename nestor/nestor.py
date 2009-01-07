@@ -276,9 +276,11 @@ def main(conf_path):
 
     while not d.stop.isSet():
         time.sleep(1)
+        sys.stdout.flush()
+        sys.stderr.flush()
 
     d.join()
     os.remove('nestor.pid')
 
 if __name__ == '__main__':
-    main('/home/nicoe/tuxdroid/scripts/nestor.conf')
+    main('nestor.conf')
