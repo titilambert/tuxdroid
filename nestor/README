@@ -1,0 +1,67 @@
+===========================
+nestor the TuxDroid Buttler
+===========================
+
+What is nestor ?
+----------------
+nestor is a TuxDroid script that use plugins to act like butler for you.
+
+The currently included plugins are:
+
+:birthday:
+  A birthday reminder because nestor knows you keep forgetting them.
+
+:go2bed:
+  Because you need to get out of your computer and get some sleep 
+
+:horloge:
+  Because time flies, it is good to have someone to remind you of the time it
+  is.
+
+:mailcheck:
+  This plugin will warn you everytime a email arrives in the maildir mailbox
+  you configured
+
+:train:
+  With this you wont miss a train anymore since nestor will remind you that you
+  that it is time for you to leave and catch that train.
+
+:wakeup:
+  nestor will wake you up at the time you choose with a friendly greeting and
+  start playing your favorite stream.
+
+Intalling nestor
+----------------
+In order to use nestor you will need to install `python-yaml`_.
+
+The ``wakeup`` plugin makes use of mpd_ and `python-mpd`_, you should really
+use them !
+
+If you have any request about nestor ask on the `tuxdroid forums`_ or contact
+me by email_.
+
+.. _`python-yaml`: http://pyyaml.org/
+.. _mpd: http://mpd.wikia.com/wiki/Music_Player_Daemon_Wiki
+.. _`python-mpd`: http://pypi.python.org/simple/python-mpd/
+.. _`tuxdroid forums`: http://bbs.tuxisalive.com
+.. _email: mailto:nicoe@openhex.org
+
+Configuring nestor
+------------------
+A simple example file is available in the ``examples`` directory edit it to
+suit your needs.
+
+Starting nestor
+---------------
+To start using nestor just launch it from the command line::
+
+    % ./nestor
+
+nestor needs a configuration file in order to run, so do not forget to create
+one.
+
+To stop nestor, send a the ``SIGTERM`` signal to its process::
+
+    % kill -TERM `cat nestor.pid`
+
+That's all, have fun !
