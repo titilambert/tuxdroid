@@ -3,6 +3,8 @@
 # This file is part of nestor. The COPYRIGHT file at the top level of this
 # repository contains the full copyright notices and license terms.
 
+__metaclass__ = type
+
 import os
 import sys
 import re
@@ -217,17 +219,14 @@ class Scheduler(PerpetualTimer):
         now = datetime.datetime.now()
         for plugin in self.plugins:
             if plugin.active and plugin.ready(now):
-                plugin().start()
+                plugin.start(now)
 
 
 class TuxAction(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, now):
         super(TuxAction, self).__init__(name=self.__class__.__name__)
-
-    @classmethod
-    def ready(cls, now):
-        return False
+        self.launched_at = now
 
     def run(self):
         tux = TuxAPI('127.0.0.1', 270)
@@ -238,6 +237,23 @@ class TuxAction(threading.Thread):
         tux.access.release()
         tux.server.disconnect()
         tux.destroy()
+
+
+class NestorPlugin:
+
+    action = TuxAction
+    active = False
+
+    def ready(self, now):
+        return False
+
+    def start(self, now):
+        action = self.action(now)
+        self.setup_action(action)
+        action.start()
+
+    def setup_action(self, action):
+        action.config = self.config
 
 
 def register_plugins(d):

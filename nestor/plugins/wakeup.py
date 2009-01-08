@@ -4,17 +4,9 @@
 
 
 import mpd
-from nestor import TuxAction
+from nestor import TuxAction, NestorPlugin
 
 class WakeUp(TuxAction):
-
-    active = True
-    name = u'Alarme'
-
-    @classmethod
-    def ready(cls, now):
-        return (now.minute == cls.config['minute']
-                and now.hour == cls.config['hour'])
 
     def action(self, tux):
         tux.eyes.open()
@@ -37,6 +29,23 @@ class WakeUp(TuxAction):
         client.play()
 
 
+class WakeUpPlugin(NestorPlugin):
+
+    action = WakeUp
+    active = True
+
+    def __init__(self, plugins):
+        super(WakeUpPlugin, self).__init__()
+        self.plugins = plugins
+
+    def ready(self, now):
+        return (now.minute == self.config['minute']
+                and now.hour == self.config['hour'])
+
+    def setup_action(self, action):
+        super(WakeUpPlugin, self).setup_action(action)
+        action.plugins = self.plugins
+
+
 def register(daemon):
-    daemon.plugins.append(WakeUp)
-    WakeUp.plugins = daemon.plugins
+    daemon.plugins.append(WakeUpPlugin(daemon.plugins))

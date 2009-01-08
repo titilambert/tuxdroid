@@ -5,18 +5,10 @@
 
 import random
 import datetime
-from nestor import TuxAction
+from nestor import TuxAction, NestorPlugin
 
 
 class TimeToSleep(TuxAction):
-
-    active = True
-    sound = True
-    name = u'Au dodo'
-
-    @classmethod
-    def ready(cls, now):
-        return (0 <= now.hour <= 6) and ((now.minute % 30) == 0)
 
     def action(self, tux):
         now = datetime.datetime.now()
@@ -37,5 +29,16 @@ class TimeToSleep(TuxAction):
         tux.eyes.close()
 
 
+class TimeToSleepPlugin(NestorPlugin):
+
+    action = TimeToSleep
+    active = True
+    sound = True
+
+    def ready(self, now):
+        return True
+        return (0 <= now.hour <= 6) and ((now.minute % 30) == 0)
+
+
 def register(daemon):
-    daemon.plugins.append(TimeToSleep)
+    daemon.plugins.append(TimeToSleepPlugin())

@@ -3,26 +3,25 @@
 # repository contains the full copyright notices and license terms.
 
 
-import datetime
-from nestor import TuxAction
+from nestor import TuxAction, NestorPlugin
 
 
 class Horloge(TuxAction):
 
-    active = True
-    sound = True
-    name = u'Horloge'
-
-    @classmethod
-    def ready(cls, now):
-        return (now.minute % cls.config['interval']) == 0
-
     def action(self, tux):
         tux.mouth.open()
-        now = datetime.datetime.now()
-        tux.tts.speak(now.strftime('%H:%M'), 'Bruno')
+        tux.tts.speak(self.launched_at.strftime('%H:%M'), 'Bruno')
         tux.mouth.close()
 
 
+class HorlogePlugin(NestorPlugin):
+
+    action = Horloge
+    active = True
+    sound = True
+
+    def ready(self, now):
+        return (now.minute % self.config['interval']) == 0
+
 def register(daemon):
-    daemon.plugins.append(Horloge)
+    daemon.plugins.append(HorlogePlugin())
