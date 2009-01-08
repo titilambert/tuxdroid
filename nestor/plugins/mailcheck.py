@@ -13,7 +13,7 @@ from nestor import TuxAction, NestorPlugin
 class MailChecker(TuxAction):
 
     def _decode_header(self, header):
-        return ' '.join(unicode(t, 'ascii' if c is None else c)
+        return ' '.join(unicode(t, 'latin1' if c is None else c)
                         for t, c in decode_header(header))
 
     def action(self, tux):
