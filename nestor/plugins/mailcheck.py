@@ -22,30 +22,31 @@ class MailChecker(TuxAction):
             messages = [os.path.join(mailbox_path, 'new', fname) for fname
                         in os.listdir(os.path.join(mailbox_path, 'new'))]
             messages += [os.path.join(mailbox_path, 'cur', fname) for fname
-                         in os.listdir(os.path.join(mailbox_path, 'cur'))]
+                         in os.listdir(os.path.join(mailbox_path, 'cur'))
+                         if 'S' not in fname.rsplit(':', 1)[1]]
 
 
             for msg_path in messages:
-                _, flags = msg_path.rsplit(':')
-                if 'S' in flags:
-                    continue
-
                 msg = email.message_from_file(open(msg_path))
                 if msg['Message-Id'] in self.seen_email:
                     continue
 
                 self.seen_email.add(msg['Message-Id'])
                 subject = self._decode_header(msg['Subject'])
-                author = re.split("<.*@.*\..{2,3}>",
+                author = re.split(" *<.*@.*\..{2,3}>",
                                   self._decode_header(msg['From']))[0]
 
-                to_speak.append('%s de %s' % (subject, author))
+                to_speak.append('%s de [%s]' % (subject, author))
 
         if to_speak:
             tux.tts.speak('Nouveaux emails', 'Bruno')
             for m in to_speak:
                 tux.tts.speak(m.encode("latin1"), 'Bruno')
-                time.sleep(2)
+                time.sleep(1)
+
+        if not messages:
+            # We don't want seen_email to grow too much
+            self.seen_email.clear()
 
 
 class MailCheckPlugin(NestorPlugin):
