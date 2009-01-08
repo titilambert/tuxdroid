@@ -3,6 +3,7 @@
 # repository contains the full copyright notices and license terms.
 
 
+import datetime
 from nestor import TuxAction, NestorPlugin
 
 class TrainWarning(TuxAction):
@@ -18,11 +19,9 @@ class TrainWarningPlugin(NestorPlugin):
     active = True
     sound = True
 
-    @classmethod
-    def ready(cls, now):
-        m10_now = now + datetime.timedelta(minutes=cls.config['interval'])
-        return [m10_now.hour, m10_now.minute] in cls.config['data']
-
+    def ready(self, now):
+        m10_now = now + datetime.timedelta(minutes=self.config['interval'])
+        return [m10_now.hour, m10_now.minute] in self.config['data']
 
 
 def register(daemon):
