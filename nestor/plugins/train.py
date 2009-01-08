@@ -20,7 +20,6 @@ class TrainWarningPlugin(NestorPlugin):
 
     @classmethod
     def ready(cls, now):
-        return True
         m10_now = now + datetime.timedelta(minutes=cls.config['interval'])
         return [m10_now.hour, m10_now.minute] in cls.config['data']
 

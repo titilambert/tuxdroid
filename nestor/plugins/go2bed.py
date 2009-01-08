@@ -36,7 +36,6 @@ class TimeToSleepPlugin(NestorPlugin):
     sound = True
 
     def ready(self, now):
-        return True
         return (0 <= now.hour <= 6) and ((now.minute % 30) == 0)
 
 
