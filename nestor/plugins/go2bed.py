@@ -11,22 +11,21 @@ from nestor import TuxAction, NestorPlugin
 class TimeToSleep(TuxAction):
 
     def action(self, tux):
-        now = datetime.datetime.now()
-        tux.eyes.open()
+        # Shut down the leds they interfer with the light level sensor
         tux.led.both.off()
-        led = random.choice([tux.led.left, tux.led.right])
-        led.on()
-        if 0 <= now.hour < 2:
-            tux.tts.speak(u'Je suis vraiment fatigué'.encode('latin1'),
-                          'Bruno')
-        elif 2 <= now.hour < 4:
-            tux.tts.speak(u'Ça va être difficile demain'.encode('latin1'), 
-                          'Bruno')
-        else:
-            tux.tts.speak(u"Il est vraiment l'heure de dormir".encode('latin1'),
-                          'Bruno')
-        led.off()
-        tux.eyes.close()
+
+        light_level = float(tux.status.requestOne('light_level')[0])
+        if light_level < 0.6:
+            # Shutdown the audio plugins
+            for plugin in self.plugins:
+                if getattr(plugin, 'sound', False):
+                    plugin.active = False
+
+            tux.tts.speak('Au dodo', 'Bruno')
+            tux.eyes.close()
+        elif (self.launched_at.minute % self.config['reminder']) == 0:
+            tux.eyes.onAsync(3, 'OPEN')
+            tux.tts.speak('Il faudrait aller dormir', 'Bruno')
 
 
 class TimeToSleepPlugin(NestorPlugin):
@@ -35,9 +34,18 @@ class TimeToSleepPlugin(NestorPlugin):
     active = True
     sound = True
 
+    def __init__(self, plugins):
+        super(TimeToSleepPlugin, self).__init__()
+        self.plugins = plugins
+
     def ready(self, now):
-        return (0 <= now.hour <= 6) and ((now.minute % 30) == 0)
+        return (self.config['start'] <= now.hour <= self.config['stop']) and \
+                (now.minute % self.config['interval']) == 0
+
+    def setup_action(self, action):
+        super(TimeToSleepPlugin, self).setup_action(action)
+        action.plugins = self.plugins
 
 
 def register(daemon):
-    daemon.plugins.append(TimeToSleepPlugin())
+    daemon.plugins.append(TimeToSleepPlugin(daemon.plugins))
