@@ -2,9 +2,10 @@
 # This file is part of nestor. The COPYRIGHT file at the top level of this
 # repository contains the full copyright notices and license terms.
 
+import os
 import re
 import time
-import mailbox
+import email
 from email.header import decode_header
 from nestor import TuxAction, NestorPlugin
 
@@ -16,24 +17,23 @@ class MailChecker(TuxAction):
                         for t, c in decode_header(header))
 
     def action(self, tux):
-        mb = mailbox.Maildir(self.config['path'],
-                             factory=mailbox.MaildirMessage)
-
-        messages = []
-        for k in mb.iterkeys():
-            m = mb.get_message(k)
-            if m.get_subdir() == 'new':
-                subject = self._decode_header(m['Subject'])
-                author = re.split("<.*@.*\..{2,3}>",
-                                  self._decode_header(m['From']))[0]
-                message_id = m['Message-Id']
-                messages.append((author, subject, message_id))
-
         to_speak = []
-        for a, s, id in messages:
-            if id not in self.seen_email:
-                self.seen_email.add(id)
-                to_speak.append('%s de %s' % (s, a))
+        for mailbox_path in self.config['paths']:
+            mailbox = os.path.join(mailbox_path, 'new')
+
+            for msg_key in os.listdir(mailbox):
+                msg_path = os.path.join(mailbox, msg_key)
+                msg = email.message_from_file(open(msg_path))
+
+                if msg['Message-Id'] in self.seen_email:
+                    continue
+
+                self.seen_email.add(msg['Message-Id'])
+                subject = self._decode_header(msg['Subject'])
+                author = re.split("<.*@.*\..{2,3}>",
+                                  self._decode_header(msg['From']))[0]
+
+                to_speak.append('%s de %s' % (subject, author))
 
         if to_speak:
             tux.tts.speak('Nouveaux emails', 'Bruno')
