@@ -212,7 +212,7 @@ class Scheduler(PerpetualTimer):
         self.config = yaml.load(open(config_path, 'r'))
 
     def add_plugin(self, plugin):
-        plugin.config = self.config.get(plugin.__name__, {})
+        plugin.config = self.config.get(plugin.action.__name__, {})
         self.plugins.append(plugin)
 
     def launch_plugin(self):
