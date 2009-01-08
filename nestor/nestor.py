@@ -263,8 +263,12 @@ def register_plugins(d):
     if plugin_path not in sys.path:
         sys.path.append(plugin_path)
 
-    for mod in [__import__(pf) for pf in plugin_files]:
-        mod.register(d)
+    for pf in plugin_files:
+        try:
+            mod = __import__(pf)
+            mod.register(d)
+        except ImportError:
+            pass
 
 
 def main(conf_path):
