@@ -17,14 +17,14 @@ class MailChecker(TuxAction):
                         for t, c in decode_header(header))
 
     def action(self, tux):
-        to_speak = []
+        to_clean, to_speak = False, []
         for mailbox_path in self.config['paths']:
             messages = [os.path.join(mailbox_path, 'new', fname) for fname
                         in os.listdir(os.path.join(mailbox_path, 'new'))]
             messages += [os.path.join(mailbox_path, 'cur', fname) for fname
                          in os.listdir(os.path.join(mailbox_path, 'cur'))
                          if 'S' not in fname.rsplit(':', 1)[1]]
-
+            to_clean |= not bool(messages)
 
             for msg_path in messages:
                 msg = email.message_from_file(open(msg_path))
@@ -44,7 +44,7 @@ class MailChecker(TuxAction):
                 tux.tts.speak(m.encode("latin1"), 'Bruno')
                 time.sleep(1)
 
-        if not messages:
+        if to_clean:
             # We don't want seen_email to grow too much
             self.seen_email.clear()
 
