@@ -19,12 +19,18 @@ class MailChecker(TuxAction):
     def action(self, tux):
         to_speak = []
         for mailbox_path in self.config['paths']:
-            mailbox = os.path.join(mailbox_path, 'new')
+            messages = [os.path.join(mailbox_path, 'new', fname) for fname
+                        in os.listdir(os.path.join(mailbox_path, 'new'))]
+            messages += [os.path.join(mailbox_path, 'cur', fname) for fname
+                         in os.listdir(os.path.join(mailbox_path, 'cur'))]
 
-            for msg_key in os.listdir(mailbox):
-                msg_path = os.path.join(mailbox, msg_key)
+
+            for msg_path in messages:
+                _, flags = msg_path.rsplit(':')
+                if 'S' in flags:
+                    continue
+
                 msg = email.message_from_file(open(msg_path))
-
                 if msg['Message-Id'] in self.seen_email:
                     continue
 
