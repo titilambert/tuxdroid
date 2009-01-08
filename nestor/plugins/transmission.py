@@ -6,8 +6,6 @@ import time
 import subprocess
 from nestor import TuxAction, NestorPlugin
 
-#ID    Done  ETA       Up      Down    Ratio  Status       Name
-
 
 class TransmissionMonitor(TuxAction):
 
@@ -37,11 +35,9 @@ class TransmissionMonitor(TuxAction):
                 to_speak.append(title)
                 self.torrents[title] = done
 
-        if to_speak:
-            tux.tts.speak('New torrents')
-            for title in to_speak:
-                tux.tts.speak('%s torrent done' % title)
-                time.sleep(1)
+        for title in to_speak:
+            tux.tts.speak('%s torrent done' % title)
+            time.sleep(1)
 
 
 class TransmissionPlugin(NestorPlugin):
