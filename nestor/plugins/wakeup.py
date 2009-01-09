@@ -3,7 +3,12 @@
 # repository contains the full copyright notices and license terms.
 
 
-import mpd
+try:
+    import mpd
+    HAS_MPD = True
+except ImportError:
+    HAS_MPD = False
+
 from nestor import TuxAction, NestorPlugin
 
 class WakeUp(TuxAction):
@@ -17,16 +22,17 @@ class WakeUp(TuxAction):
             if getattr(plugin, 'sound', False):
                 plugin.active = True
 
-        client = mpd.MPDClient()
-        client.connect('localhost', 6600)
-        for d in client.outputs():
-            if d['outputname'] != 'TuxDroid':
-                client.disableoutput(int(d['outputid']))
-            else:
-                client.enableoutput(int(d['outputid']))
-        client.clear()
-        client.add(self.config['stream'])
-        client.play()
+        if HAS_MPD and self.config.get('stream', False):
+            client = mpd.MPDClient()
+            client.connect('localhost', 6600)
+            for d in client.outputs():
+                if d['outputname'] != 'TuxDroid':
+                    client.disableoutput(int(d['outputid']))
+                else:
+                    client.enableoutput(int(d['outputid']))
+            client.clear()
+            client.add(self.config['stream'])
+            client.play()
 
 
 class WakeUpPlugin(NestorPlugin):
