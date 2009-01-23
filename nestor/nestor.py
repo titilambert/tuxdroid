@@ -104,11 +104,13 @@ class Menu(threading.Thread):
         self.tux = self.setup_tux()
         self.menu_idx = [0]
 
-        self.menu = [(u'Son', [(u'Activer', self.sound),
-                               (u'Désactiver', self.nosound)]),
-                     (u'Lumières', [(u'Activer', self.wakeup),
-                                    (u'Désactiver', self.dodo)]),
-                     (u"Donner l'heure", self.whattime),
+        self.menu = [(u'Sound', [(u'Enable', self.sound),
+                               (u'Disable', self.nosound)]),
+                     (u'Light', [(u'Enable', self.wakeup),
+                                    (u'Disable', self.dodo)]),
+                     (u"Time", self.whattime),
+                     (u"Alarm Snooze", [ (u"Alarm", self.alarm), 
+							(u"Alarm Snooze", self.alarm) ] )
                      ]
 
     def setup_tux(self):
@@ -128,7 +130,7 @@ class Menu(threading.Thread):
         return tux
 
     def run(self):
-        while not self.stop.isSet():
+	while not self.stop.isSet():
             time.sleep(1)
         self.tux.server.disconnect()
         self.tux.destroy()
@@ -177,7 +179,7 @@ class Menu(threading.Thread):
             t.start()
 
     def say(self, message):
-        self.tux.tts.speak(message.encode('latin1'), 'Bruno')
+        self.tux.tts.speak(message.encode('latin1'))
 
     def dodo(self):
         self.tux.led.both.off()
@@ -189,7 +191,14 @@ class Menu(threading.Thread):
 
     def whattime(self):
         now = datetime.datetime.now()
-        self.tux.tts.speak(now.strftime('%H:%M'), 'Bruno')
+	# Get current locutor
+	locutor = self.tux.tts.getLocutor() 
+	if locutor == 'Ryan' or locutor == 'Heather' :
+		# English time
+        	self.tux.tts.speak(now.strftime('%I:%M'))
+	else :
+		# Other
+	        self.tux.tts.speak(now.strftime('%H:%M'), 'Bruno')
 
     def nosound(self):
         for plugin in self.plugins:
@@ -203,6 +212,12 @@ class Menu(threading.Thread):
                 plugin.active = True
         self.say(u'OK')
 
+    def alarm(self):
+        for plugin in self.plugins:
+	    if plugin.action.__name__ == "WakeUp" :
+	        plugin.snooze = -1
+                self.say(u'Snooze Disabled')
+
 
 class Scheduler(PerpetualTimer):
 
@@ -212,15 +227,21 @@ class Scheduler(PerpetualTimer):
         self.config = yaml.load(open(config_path, 'r'))
 
     def add_plugin(self, plugin):
+	print plugin.action.__name__
         plugin.config = self.config.get(plugin.action.__name__, {})
         self.plugins.append(plugin)
 
     def launch_plugin(self):
         now = datetime.datetime.now()
+	print str(now)
         for plugin in self.plugins:
+	    print "================"
+	    print "name : %s" % plugin.action.__name__
+	    print "active : %s " % plugin.active
+	    #print "ready : %s " % plugin.ready(now)
             if plugin.active and plugin.ready(now):
                 plugin.start(now)
-
+	    print "FIN"
 
 class TuxAction(threading.Thread):
 
@@ -229,14 +250,27 @@ class TuxAction(threading.Thread):
         self.launched_at = now
 
     def run(self):
+	print "%s : run " % self.__class__.__name__
         tux = TuxAPI('127.0.0.1', 270)
+	print "%s : create tux" % self.__class__.__name__
         tux.server.autoConnect(CLIENT_LEVEL_RESTRICTED,
                                self.__class__.__name__, 'NONE')
+	print "%s : waiting access" % self.__class__.__name__
         if tux.access.waitAcquire(30, ACCESS_PRIORITY_NORMAL):
-            self.action(tux)
+	    print "%s : access ok" % self.__class__.__name__
+	    try :
+	            self.action(tux)
+	    except Exception, e:
+		print "Erreur : %s" % str(e)
+	else :
+		print "%s : accces denied" % self.__class__.__name__
+	print "%s : release" % self.__class__.__name__
         tux.access.release()
+	print "%s : disconnect" % self.__class__.__name__
         tux.server.disconnect()
+	print "%s : destroy" % self.__class__.__name__
         tux.destroy()
+	print "%s : fin" % self.__class__.__name__
 
 
 class NestorPlugin:
@@ -248,9 +282,13 @@ class NestorPlugin:
         return False
 
     def start(self, now):
+	print "start1"
         action = self.action(now)
+	print "start2"
         self.setup_action(action)
+	print "start3"
         action.start()
+	print "start4"
 
     def setup_action(self, action):
         action.config = self.config

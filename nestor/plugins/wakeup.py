@@ -9,6 +9,8 @@ try:
 except ImportError:
     HAS_MPD = False
 
+import urllib
+
 from nestor import TuxAction, NestorPlugin
 
 class WakeUp(TuxAction):
@@ -16,12 +18,19 @@ class WakeUp(TuxAction):
     def action(self, tux):
         tux.eyes.open()
         tux.led.both.on()
-        tux.tts.speak('Debout paillasse !', 'Bruno')
-
+	# Alarm 
+	tux.flippers.on(3,tux.flippers.getPosition(),5)
+	tux.tts.speak('Wake up Wake up Wake up Wake up Wake up')
+	tux.flippers.on(3,tux.flippers.getPosition(),5)
+	tux.eyes.on(3,'OPEN')
+        # Enable idle_behavior
+        urllib.urlopen("http://localhost:270/0/idle_behavior/start?")
+	# end alarm
+	# Enable sound for all plugins
         for plugin in self.plugins:
             if getattr(plugin, 'sound', False):
                 plugin.active = True
-
+	# MPD
         if HAS_MPD and self.config.get('stream', False):
             client = mpd.MPDClient()
             client.connect('localhost', 6600)
@@ -39,14 +48,22 @@ class WakeUpPlugin(NestorPlugin):
 
     action = WakeUp
     active = True
+    snooze = -1
 
     def __init__(self, plugins):
         super(WakeUpPlugin, self).__init__()
         self.plugins = plugins
 
     def ready(self, now):
-        return (now.minute == self.config['minute']
-                and now.hour == self.config['hour'])
+	print self.snooze
+	if now.minute == self.snooze :
+	    self.snooze = (self.snooze + self.config['snooze']) % 60
+	    return True
+	elif (now.minute == self.config['minute'] and now.hour == self.config['hour']):
+	    self.snooze = ( self.config['minute'] + self.config['snooze'] ) % 60
+    	    return True
+	else:
+	    return False
 
     def setup_action(self, action):
         super(WakeUpPlugin, self).setup_action(action)

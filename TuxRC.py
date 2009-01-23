@@ -79,15 +79,15 @@ def connect():
     print("Please be sure that port 720 is accessible on the remote host.")
     #print a blank line
     print 
-    try:
-        address = input("Please enter the address of the server (127.0.0.1 for the local Tux): ")
-        print
-    except:
-        print('Please enter the address in quotes. For example, "127.0.0.1" Please run this script again.')
-        print
-        #exit the python console 
-        quit()
-
+#    try:
+#        address = input("Please enter the address of the server (127.0.0.1 for the local Tux): ")
+#        print
+#    except:
+#        print('Please enter the address in quotes. For example, "127.0.0.1" Please run this script again.')
+#        print
+#        #exit the python console 
+#        quit()
+    address = "127.0.0.1"
     #Connect to Tux Droid server
 
     #Define the tux object tux by using the address and port of the Tux Droid

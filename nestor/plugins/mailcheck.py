@@ -39,9 +39,9 @@ class MailChecker(TuxAction):
                 to_speak.append('%s de [%s]' % (subject, author))
 
         if to_speak:
-            tux.tts.speak('Nouveaux emails', 'Bruno')
+            tux.tts.speak('Nouveaux emails')
             for m in to_speak:
-                tux.tts.speak(m.encode("latin1"), 'Bruno')
+                tux.tts.speak(m.encode("latin1"))
                 time.sleep(1)
 
         if to_clean:

@@ -6,26 +6,43 @@
 import random
 import datetime
 from nestor import TuxAction, NestorPlugin
-
+import urllib
+import time
 
 class TimeToSleep(TuxAction):
 
+    sleep = False
+
     def action(self, tux):
         # Shut down the leds they interfer with the light level sensor
-        tux.led.both.off()
+	tux.led.both.off()
+	# Wait 1 second to not light the sensor
+	time.sleep(1)
 
         light_level = float(tux.status.requestOne('light_level')[0])
-        if light_level < 0.6:
+        if light_level < 1:
             # Shutdown the audio plugins
             for plugin in self.plugins:
                 if getattr(plugin, 'sound', False):
                     plugin.active = False
-
-            tux.tts.speak('Au dodo', 'Bruno')
+	
+	    # Disable idle_behavior
+ 	    urllib.urlopen("http://localhost:270/0/idle_behavior/stop?")
+	    # Good night
+            tux.tts.speak('Good night')
             tux.eyes.close()
-        elif (self.launched_at.minute % self.config['reminder']) == 0:
+        #elif (self.launched_at.minute % self.config['reminder']) == 0:
+        #    tux.eyes.onAsync(3, 'OPEN')
+	#    tux.led.both.on()
+        #    tux.tts.speak('You have to go to bed')
+        else:
+	    tux.mouth.open()
             tux.eyes.onAsync(3, 'OPEN')
-            tux.tts.speak('Il faudrait aller dormir', 'Bruno')
+	    while tux.led.both.getState() != "ON" :
+		    tux.led.both.on()
+            tux.tts.speak('You have to go to bed')
+	    tux.flippers.on(3,tux.flippers.getPosition(),5)
+            tux.mouth.close()
 
 
 class TimeToSleepPlugin(NestorPlugin):
@@ -39,8 +56,7 @@ class TimeToSleepPlugin(NestorPlugin):
         self.plugins = plugins
 
     def ready(self, now):
-        return (self.config['start'] <= now.hour <= self.config['stop']) and \
-                (now.minute % self.config['interval']) == 0
+        return   (self.config['start'] <= now.hour <= self.config['stop']) and (now.minute % self.config['reminder']) == 0   
 
     def setup_action(self, action):
         super(TimeToSleepPlugin, self).setup_action(action)
