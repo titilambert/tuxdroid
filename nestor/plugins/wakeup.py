@@ -55,11 +55,10 @@ class WakeUpPlugin(NestorPlugin):
         self.plugins = plugins
 
     def ready(self, now):
-	print self.snooze
 	if now.minute == self.snooze :
 	    self.snooze = (self.snooze + self.config['snooze']) % 60
 	    return True
-	elif (now.minute == self.config['minute'] and now.hour == self.config['hour']):
+	elif now.minute == self.config['minute'] and now.hour == self.config['hour']:
 	    self.snooze = ( self.config['minute'] + self.config['snooze'] ) % 60
     	    return True
 	else:

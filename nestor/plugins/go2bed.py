@@ -20,7 +20,8 @@ class TimeToSleep(TuxAction):
 	time.sleep(1)
 
         light_level = float(tux.status.requestOne('light_level')[0])
-        if light_level < 1:
+	print light_level
+        if light_level < 0.55:
             # Shutdown the audio plugins
             for plugin in self.plugins:
                 if getattr(plugin, 'sound', False):
