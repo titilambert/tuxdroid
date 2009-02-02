@@ -14,10 +14,10 @@ class Horloge(TuxAction):
         locutor = self.tux.tts.getLocutor()
         if locutor == 'Ryan' or locutor == 'Heather' :
                 # English time
-                self.tux.tts.speak(self.launched_at.strftime('%I:%M'))
+                tux.tts.speak(self.launched_at.strftime('%I:%M'))
         else :
                 # Other
-                self.tux.tts.speak(self.launched_at.strftime('%H:%M'), 'Bruno')
+                tux.tts.speak(self.launched_at.strftime('%H:%M'), 'Bruno')
         tux.mouth.close()
 
 
